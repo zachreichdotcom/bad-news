@@ -1,0 +1,20 @@
+FROM ghcr.io/puppeteer/puppeteer:latest
+
+# Tell Puppeteer to use the installed Google Chrome
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+# Switch to root to install dependencies without permission errors
+USER root
+RUN npm install
+
+# Copy your local code into the container
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
