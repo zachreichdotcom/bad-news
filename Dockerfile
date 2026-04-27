@@ -1,18 +1,23 @@
-FROM ghcr.io/puppeteer/puppeteer:latest
+FROM node:18-slim
 
-# Tell Puppeteer to use the installed Google Chrome
+# Install Google Chrome Stable and fonts directly into the container
+RUN apt-get update && apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb[arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+      --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+# Tell Puppeteer exactly where we just installed Chrome
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-
-# Switch to root to install dependencies without permission errors
-USER root
 RUN npm install
 
-# Copy your local code into the container
 COPY . .
 
 EXPOSE 3000
